@@ -1,0 +1,14 @@
+{
+  "name": "egencia-privacy",
+  "private": true,
+  "description": "Apps Script: mark Egencia calendar events private (deploy with clasp)",
+  "scripts": {
+    "push": "clasp push -f",
+    "open": "clasp open-script",
+    "logs": "clasp logs",
+    "setup": "clasp run setupTrigger"
+  },
+  "devDependencies": {
+    "@google/clasp": "^3.3.0"
+  }
+}
