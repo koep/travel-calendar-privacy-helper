@@ -48,6 +48,17 @@ To stop scheduling:
 
 (or implement a one-off runner that calls `removeTriggers()` from the codebase).
 
+## Updating npm packages
+
+Dependencies live in [package.json](package.json); this repo uses a committed [package-lock.json](package-lock.json) (run `npm install` after cloning).
+
+1. **See what is outdated:** `npm outdated`
+2. **Bump within the ranges already in `package.json`:** `npm update` — refreshes the lockfile for versions allowed by semver (for example `^3.3.0` can move to newer 3.x, not 4.x).
+3. **Move to a specific or latest version:** `npm install @google/clasp@latest --save-dev` (or replace `latest` with a version). This updates both `package.json` and the lockfile.
+4. **Optional — bump ranges in `package.json`:** [npm-check-updates](https://www.npmjs.com/package/npm-check-updates) (`npx npm-check-updates -u`, then `npm install`) rewrites version ranges; review diffs before committing.
+5. **Sanity check:** `npx clasp --version` (or `npm run push` against your project if you want an end-to-end check).
+6. **Commit:** when the lockfile changes, commit `package.json` and `package-lock.json` together.
+
 ## Redeploy / observe
 
 ```bash
