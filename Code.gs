@@ -1,4 +1,4 @@
-const EGENCIA_EMAIL = 'noreply@mail.egencia.de';
+const EGENCIA_EMAIL = PropertiesService.getScriptProperties().getProperty('EGENCIA_EMAIL') || 'noreply@mail.egencia.de';
 const CALENDAR_ID = 'primary';
 const FORWARD_MONTHS = 7;
 
@@ -60,7 +60,7 @@ function markEgenciaEventsPrivate() {
         if (Object.keys(patch).length > 0) {
           Calendar.Events.patch(patch, CALENDAR_ID, ev.id, { sendUpdates: 'none' });
           updated++;
-          console.log(actions.join(', ') + ': ' + (ev.summary || '(no title)') + ' (' + ev.id + ')');
+          console.log(actions.join(', ') + ': ' + ev.id);
         }
       }
     }
