@@ -10,6 +10,7 @@ function markEgenciaEventsPrivate() {
   const timeMax = new Date();
   timeMax.setMonth(timeMax.getMonth() + FORWARD_MONTHS);
 
+  const userEmail = Session.getEffectiveUser().getEmail();
   let pageToken;
   let scanned = 0;
   let updated = 0;
@@ -29,10 +30,38 @@ function markEgenciaEventsPrivate() {
       const fromEgencia =
         (ev.organizer && ev.organizer.email === EGENCIA_EMAIL) ||
         (ev.creator && ev.creator.email === EGENCIA_EMAIL);
-      if (fromEgencia && ev.visibility !== 'private') {
-        Calendar.Events.patch({ visibility: 'private' }, CALENDAR_ID, ev.id);
-        updated++;
-        console.log('private: ' + (ev.summary || '(no title)') + ' (' + ev.id + ')');
+
+      if (fromEgencia) {
+        const patch = {};
+        const actions = [];
+
+        if (ev.visibility !== 'private') {
+          patch.visibility = 'private';
+          actions.push('private');
+        }
+
+        const hasReminders = ev.reminders && (ev.reminders.useDefault ||
+          (ev.reminders.overrides && ev.reminders.overrides.length > 0));
+        if (hasReminders) {
+          patch.reminders = { useDefault: false, overrides: [] };
+          actions.push('reminders removed');
+        }
+
+        const selfAttendee = (ev.attendees || []).find(function (a) {
+          return a.self || a.email === userEmail;
+        });
+        if (selfAttendee &&
+          (selfAttendee.responseStatus === 'needsAction' || selfAttendee.responseStatus === 'declined')) {
+          selfAttendee.responseStatus = 'accepted';
+          patch.attendees = ev.attendees;
+          actions.push('accepted');
+        }
+
+        if (Object.keys(patch).length > 0) {
+          Calendar.Events.patch(patch, CALENDAR_ID, ev.id, { sendUpdates: 'none' });
+          updated++;
+          console.log(actions.join(', ') + ': ' + (ev.summary || '(no title)') + ' (' + ev.id + ')');
+        }
       }
     }
     pageToken = res.nextPageToken;
